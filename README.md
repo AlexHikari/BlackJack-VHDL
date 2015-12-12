@@ -6,6 +6,3 @@ asmpractica3.pptx --> Contiene el diagrama asm y la ruta de datos explicados.
 ERRORES
 -------
 
-
-
-Alex
