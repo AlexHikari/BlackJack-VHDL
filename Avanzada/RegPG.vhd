@@ -27,12 +27,11 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity RegPG is
-generic (width : natural);
-port ( a   : in  std_logic_vector(width-1 downto 0);
+port ( a   : in  std_logic_vector(4 downto 0);
        clk : in  std_logic;
 		 load: in  std_logic;
 		 rst : in  std_logic;
-       Y   : out std_logic_vector(width-1 downto 0));
+       Y   : out std_logic_vector(4 downto 0));
 end RegPG;
 
 architecture arch_RegPG of RegPG is

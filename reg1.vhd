@@ -26,28 +26,27 @@ use IEEE.NUMERIC_STD.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity RegPG is
+entity RegPG1 is
 generic (width : natural);
-port ( a   : in  std_logic_vector(width-1 downto 0);
+port ( a   : in  std_logic;
        clk : in  std_logic;
 		 load: in  std_logic;
 		 rst : in  std_logic;
-       Y   : out std_logic_vector(width-1 downto 0));
-end RegPG;
+       Y   : out std_logic);
+end RegPG1;
 
-architecture arch_RegPG of RegPG is
+architecture arch_RegPG1 of RegPG1 is
 
 begin
 
 carga: process (clk,rst,load)
 	begin
 		if rst = '1' then
-			Y <= (others => '0');
+			Y <= '0';
 		elsif rising_edge(clk) then
 			if load = '1' then
 				Y <= a;
 			end if;
 		end if;
 	end process carga;
-end arch_RegPG;
-
+end arch_RegPG1;

@@ -27,29 +27,27 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity DataPath is
-generic (width_cont,width_reg_zero,width_reg_perd,width_reg_acc,width_RAM,width_sum,width_disp : natural);
  port (
     clk                   : in  std_logic;                            -- clock
-    rst_n                 : in  std_logic;                            -- reset
 	 ctrl                  : in  std_logic_vector(8 downto 0);         -- Control
-	 din_ram               : in  std_logic_vector(width_RAM-1 downto 0);         -- din entra con '0000' desde BlackJack
+	 din_ram               : in  std_logic_vector(3 downto 0);         -- din entra con '0000' desde BlackJack
 	 carta_incorrecta      : out std_logic;                             -- carta incorrecta
+--  puntuacionPartida     : out std_logic_vector(3 downto 0);
 	 perdido               : out std_logic;                             -- ha perdido la partida
-	 cartaActualValor      : out std_logic_vector(width_disp-1 downto 0);         -- Valor carta actual
-	 puntuacionAcumulada_1 : out std_logic_vector(width_disp-1 downto 0);         -- Puntuacion acumulada carta
-	 puntuacionAcumulada_2 : out std_logic_vector(width_disp-1 downto 0);         -- Puntuacion acumulada carta
-    status                : out std_logic_vector(1 downto 0));        -- Status (es zero,es perdida acc > 21) posible nueva señal ganado en opcional
+	 cartaActualValor      : out std_logic_vector(6 downto 0);         -- Valor carta actual
+	 puntuacionAcumulada_1 : out std_logic_vector(6 downto 0);         -- Puntuacion acumulada carta
+	 puntuacionAcumulada_2 : out std_logic_vector(6 downto 0);         -- Puntuacion acumulada carta
+    status                : out std_logic);        -- Status (es zero,es perdida acc > 21) posible nueva señal ganado en opcional
 
 end DataPath;
 
 architecture arch_DataPath of DataPath is
 
 	component ContModn is
-	generic (width : natural);
 	port ( c_enable : in std_logic;
 			 clk      : in std_logic;
 			 rst      : in std_logic;
-			 Y        : out std_logic_vector(width-1 downto 0));
+			 Y        : out std_logic_vector(5 downto 0));
 	end component;
 
 	component Conv_7seg is
@@ -58,16 +56,14 @@ architecture arch_DataPath of DataPath is
 	end component;
 
 	component RegPG is
-	generic (width : natural);
-	port ( a   : in  std_logic_vector(width-1 downto 0);
+	port ( a   : in  std_logic_vector(4 downto 0);
 			 clk : in  std_logic;
 			 load: in  std_logic;
 			 rst : in  std_logic;
-			 Y   : out std_logic_vector(width-1 downto 0));
+			 Y   : out std_logic_vector(4 downto 0));
 	end component;
 	
 	component RegPG1 is
-	generic (width : natural);
 	port ( a   : in  std_logic;
 			 clk : in  std_logic;
 			 load: in  std_logic;
@@ -76,10 +72,9 @@ architecture arch_DataPath of DataPath is
 	end component;
 
 	component adder is
-		generic (width : natural);
-		port(a    : in std_logic_vector  (width-2 downto 0);
-			  b    : in std_logic_vector  (width-1 downto 0);
-			  cout : out std_logic_vector (width-1 downto 0));
+		port(a    : in std_logic_vector  (3 downto 0);
+			  b    : in std_logic_vector  (4 downto 0);
+			  cout : out std_logic_vector (4 downto 0));
 			  
 	end component;
 
@@ -103,26 +98,27 @@ architecture arch_DataPath of DataPath is
 	alias rst_con : std_logic is control_aux (6);
 	alias ld_zero : std_logic is control_aux (7);
 	alias ce_cont : std_logic is control_aux (8);
-	
-	-- señales calculo de status
-	
-	signal zero : std_logic;
-	signal perdida : std_logic;
 
 	-- señales de interconexión
 
-	signal res_cont : std_logic_vector(width_cont-1 downto 0);
-	signal dout_RAM : std_logic_vector(width_RAM-1 downto 0);
-	signal sum_res  : std_logic_vector(width_sum-1 downto 0);
-	signal ACC_reg  : std_logic_vector(width_reg_acc-1 downto 0);
+	signal res_cont : std_logic_vector(5 downto 0);
+	signal dout_RAM : std_logic_vector(3 downto 0);
+	signal sum_res  : std_logic_vector(4 downto 0);
+	signal ACC_reg  : std_logic_vector(4 downto 0);
 	signal ZERO_reg : std_logic;
 	signal PERD_reg : std_logic;
+-- signal punt_sum : std_logic_vector(4 downto 0);
+-- signal punt_reg : std_logic_vector(4 downto 0);
+	---
+	
+	signal zero     : std_logic;
+	signal perdida  : std_logic;
 	
 	-- out display
 	
-	signal puntuacionAcumulada_1_aux : std_logic_vector (width_disp-1 downto 0);
-	signal puntuacionAcumulada_2_aux : std_logic_vector (width_disp-1 downto 0);
-	signal cartaActualValor_aux : std_logic_vector (width_disp-1 downto 0);
+	signal puntuacionAcumulada_1_aux : std_logic_vector (6 downto 0);
+	signal puntuacionAcumulada_2_aux : std_logic_vector (6 downto 0);
+	signal cartaActualValor_aux : std_logic_vector (6 downto 0);
 
 	-- señales conversion a display explicadas en powerpoint
 
@@ -135,8 +131,8 @@ architecture arch_DataPath of DataPath is
 	control_aux <= ctrl;
 	
 	-- para leds
-	ACC_1 <= "000" & ACC_reg(width_reg_acc-1); --- 000 and msb     1
-	ACC_2 <= ACC_reg(width_reg_acc-2 downto 0); --- msb-1 downto 0 F
+	ACC_1 <= "000" & ACC_reg(4); --- 000 and msb     1
+	ACC_2 <= ACC_reg(3 downto 0); --- msb-1 downto 0 F
 	
 
 	-- instanciación de componentes
@@ -148,7 +144,7 @@ architecture arch_DataPath of DataPath is
 			din  => din_ram,
 			dout => dout_RAM);
 			
-		CONTADOR : ContModn generic map (width => width_cont) port map (
+		CONTADOR : ContModn port map (
 			c_enable => ce_cont,
 			clk      => clk,
 			rst      => rst_con,
@@ -166,53 +162,55 @@ architecture arch_DataPath of DataPath is
 			x       => dout_RAM,
 			display => cartaActualValor_aux);
 			
-		SUMADOR : adder generic map (width => width_sum) port map (
+		SUMADOR : adder port map (
 			a    => dout_RAM,
 			b    => ACC_reg,
 			cout => sum_res);
 		
-		ACC_REGISTER : RegPG generic map (width => width_reg_acc) port map (
+		ACC_REGISTER : RegPG port map (
 			a    => sum_res,
 			clk  => clk,
 			load => ld_acc,
 			rst  => rst_acc,
 			Y    => ACC_reg);
 			
-		ZERO_REGISTER	: RegPG1 generic map (width => width_reg_zero) port map (
+		ZERO_REGISTER	: RegPG1 port map (
 			a    => zero,
 			clk  => clk,
 			load => ld_zero,
 			rst  => rst_zer,
 			Y    => ZERO_reg);
 			
-		PERDIDO_REGISTER : RegPG1 generic map (width => width_reg_perd) port map (
+		PERDIDO_REGISTER : RegPG1 port map (
 			a    => perdida,
 			clk  => clk,
 			load => ld_per,
 			rst  => rst_per,
 			Y    => PERD_reg);
 			
-			-- señales a status
-			status(0) <= ZERO_reg;
-			status(1) <= PERD_reg;
+		--PUNTUACION_REGISTER : RegPG port map (
+		-- a    => punt_sum,
+		--	clk  => clk,
+		--	load => ld_punt,
+		--	rst  => rst_punt,
+		-- Y    => punt_reg);
+		--
+		--);
+			
+			-- señales a status y salida
+			status<= perdida;
+			perdido<= PERD_reg;
+			carta_incorrecta<=ZERO_reg;
 			
 			--señales a out
 			puntuacionAcumulada_1 <= puntuacionAcumulada_1_aux;
 			puntuacionAcumulada_2 <= puntuacionAcumulada_2_aux;
 			cartaActualValor <= cartaActualValor_aux;
 		
-		-- combinacionalmente =0 >=21
-		combi : process(dout_RAM,ACC_reg)
-			begin
-				if unsigned(dout_RAM) = 0 then
-					zero <= '1';
-					carta_incorrecta <= '1';
-				end if;
-				if unsigned(ACC_reg) >= 22 then
-					perdida <= '1';
-					perdido <= '1';
-				end if;
-			end process combi;
+		zero <= '1' when unsigned(dout_RAM) = 0 else '0';
+		perdida <= '1' when unsigned(ACC_reg) >= 22 else '0';
+		
+		-- 
 
 end arch_DataPath;
 

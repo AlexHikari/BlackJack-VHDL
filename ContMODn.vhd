@@ -37,6 +37,8 @@ end ContMODn;
 
 architecture arch_ContMODn of ContMODn is
 
+
+signal Y_aux : unsigned(width-1 downto 0);
 begin
 
 contador: process(clk,c_enable,rst)
@@ -44,12 +46,11 @@ contador: process(clk,c_enable,rst)
 		if rst = '1' then
 			Y <= (others => '0');
 		elsif rising_edge(clk) then
-			if unsigned(Y) = 52 then
+			if Y_aux = 52 then
 				Y <= (others => '0');
 			elsif c_enable = '1' then
-				Y <= unsigned(Y) +1;
-			elsif c_enable = '0' then
-				Y <= Y;
+				Y_aux <= Y_aux +1;
+				Y <= std_logic_vector(Y_aux);
 			end if;
 		end if;
 	end process contador;

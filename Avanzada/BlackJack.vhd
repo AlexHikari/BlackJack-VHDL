@@ -47,18 +47,16 @@ architecture arch_BlackJack of BlackJack is
 -- implementacion de los componentes
 
 component DataPath is
-generic (width_cont,width_reg_zero,width_reg_perd,width_reg_acc,width_RAM,width_sum,width_disp : natural);
  port (
     clk                   : in  std_logic;                            -- clock
-    rst_n                 : in  std_logic;                            -- reset
 	 ctrl                  : in  std_logic_vector(8 downto 0);         -- Control
-	 din_ram               : in  std_logic_vector(width_RAM-1 downto 0);         -- din entra con '0000' desde BlackJack
+	 din_ram               : in  std_logic_vector(3 downto 0);         -- din entra con '0000' desde BlackJack
 	 carta_incorrecta      : out std_logic;                             -- carta incorrecta
 	 perdido               : out std_logic;                             -- ha perdido la partida
-	 cartaActualValor      : out std_logic_vector(width_disp-1 downto 0);         -- Valor carta actual
-	 puntuacionAcumulada_1 : out std_logic_vector(width_disp-1 downto 0);         -- Puntuacion acumulada carta
-	 puntuacionAcumulada_2 : out std_logic_vector(width_disp-1 downto 0);         -- Puntuacion acumulada carta
-    status                : out std_logic_vector(1 downto 0));        -- Status (es zero,es perdida acc > 21) posible nueva señal ganado en opcional
+	 cartaActualValor      : out std_logic_vector(6 downto 0);         -- Valor carta actual
+	 puntuacionAcumulada_1 : out std_logic_vector(6 downto 0);         -- Puntuacion acumulada carta
+	 puntuacionAcumulada_2 : out std_logic_vector(6 downto 0);         -- Puntuacion acumulada carta
+    status                : out std_logic);        -- Status (es zero,es perdida acc > 21) posible nueva señal ganado en opcional
 
 end component;
 
@@ -69,7 +67,7 @@ component ControlUnit is
 	 inicio                : in  std_logic;                             -- señal de inicio
 	 otra_carta            : in  std_logic;                             -- otra carta
 	 plantarse             : in  std_logic;                             -- plantarse
-	 status                : in  std_logic_vector(1 downto 0);          -- Status (es zero,es perdida acc > 21) posible nueva señal ganado en opcional
+	 status                : in  std_logic;          -- Status (es zero,es perdida acc > 21) posible nueva señal ganado en opcional
 	 maquina_lista         : out std_logic;                             -- maquina lista
 	 ctrl                  : out std_logic_vector(8 downto 0));         -- Control
 
@@ -78,7 +76,7 @@ end component;
 --definicion señales control y status
 
 signal ctrl   : std_logic_vector(8 downto 0);
-signal status : std_logic_vector(1 downto 0);
+signal status : std_logic;
 
 -- signal outs
 
@@ -89,16 +87,8 @@ begin
 
 valor_acumulado <= acumulada1 & acumulada2;
 
-DATAPATHH: DataPath generic map (
-			width_cont     => 6,
-			width_reg_zero => 1,
-			width_reg_perd => 1,
-			width_reg_acc  => 5,
-			width_RAM      => 4,
-			width_sum      => 5,
-			width_disp     => 7) port map (
+DATAPATHH: DataPath port map (
 				clk                    => clk,
-				rst_n                  => reset,
 				ctrl                   => ctrl,
 				din_ram                => "0000",
 				cartaActualValor       => carta_actual,

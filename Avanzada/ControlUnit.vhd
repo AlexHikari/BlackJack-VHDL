@@ -33,7 +33,7 @@ entity ControlUnit is
 	 inicio                : in  std_logic;                             -- señal de inicio
 	 otra_carta            : in  std_logic;                             -- otra carta
 	 plantarse             : in  std_logic;                             -- plantarse
-	 status                : in  std_logic_vector(1 downto 0);
+	 status                : in  std_logic;
 	 maquina_lista         : out std_logic;                             -- maquina lista
 	 ctrl                  : out std_logic_vector(8 downto 0));         -- Control
 
@@ -59,18 +59,20 @@ architecture arch_ControlUnit of ControlUnit is
 	
 	-- señales status
 	
-	signal status_aux : std_logic_vector (1 downto 0);
-	alias perdida: std_logic is status_aux (1);
+	signal perdida : std_logic;
 
 begin
-
-
-	perdida <= status(1);
+		
+	perdida <= status;
 	ctrl <= control_aux;
+
+
+
 	p_next_state : process (current_state, inicio, plantarse, otra_carta, perdida) is
 		begin  -- process p_next_state
-		
-			control_aux <= (others => '0');
+
+		control_aux <= (others => '0');
+		maquina_lista <= '0';
 			
 			case current_state is
 			
@@ -91,32 +93,35 @@ begin
 				
 					rst_per <= '1';
 					ce_cont <= '1';
-					
-					if perdida = '1' then
-						next_state <= s0;
-					elsif perdida = '0' then
-						if plantarse = '1' then
+						if plantarse = '0' then
 							next_state <= s0;
-						elsif plantarse = '0' then
-							if otra_carta = '1' then
+						else
+							if otra_carta = '0' then
 								next_state <= s2;
 							else
 								next_state <= s1;
 							end if;
 						end if;
-					end if;
+			
 					
-				when s2 =>
-				
-					ld_acc  <= '1';
-					ld_zero <= '1';
-					next_state <= s3;
+				when s2 => -- mantengo el estado s2 
+					if(otra_carta = '0') then
+						next_state <= s2;
+					else
+						next_state <= s3;
+					end if;
 					
 				when s3 =>
 				
+					ld_acc  <= '1';
+					ld_zero <= '1';
 					ld_per <= '1';
 					we_ram <= '1';
-					next_state <= s1;
+					if perdida = '1' then
+						next_state <= s0;
+					else
+						next_state <= s1;
+					end if;
 					
 				when others => null;
 			end case;
@@ -127,7 +132,7 @@ begin
 
  p_status_reg : process (clk, rst_n) is
   begin
-    if rst_n = '0' then
+    if rst_n = '1' then
       current_state <= s0;
     elsif rising_edge(clk) then
       current_state <= next_state;
