@@ -1,5 +1,6 @@
 # BlackJack-VHDL
 
-asmpractica3.pptx --> Contiene el diagrama asm y la ruta de datos ***OJO! NO ESTÁ HECHO PARA LA PARTE AVANZADA DE LA PRÁCTICA***
+Implementation of BlackJack game using VHDL to be used on FPGA
+asmpractica3.pptx --> Contains the asm diagram and data-routes
 
 
